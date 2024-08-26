@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Model</title>
+    <style>
+        /* Add a background image with leaf design */
+        body {
+            background-image: url('MIH.jpg');
+            background-repeat: repeat; /* or 'no-repeat' if you don't want it to repeat */
+            background-size: cover; /* or 'contain' or 'auto', depending on your preference */
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* Style the header */
+        h1 {
+            color: #9d37e6;
+            font-size: 3em;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px #000000;
+        }
+
+        /* Add some padding and margin to the main content */
+        .content {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+            border-radius: 10px;
+            margin: 20px;
+            display: inline-block;
+        }
+
+        /* Style the container for the AI model */
+        #webcam-container {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #label-container {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        /* Style the footer */
+        footer {
+        color: #000000; /* Use the same blue color for the text instead */
+        padding: 10px;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background-color: transparent; /* Remove the background color */
+    }
+        }
+
+        /* Add some spacing around elements */
+        p {
+            font-size: 1.2em;
+        }
+
+        /* Button Style (if you want to add any) */
+        .btn {
+            background-color: #ff6347;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1em;
+            margin: 20px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+    </style>
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>My AI Model</h1>
+    <div class="content">
+        <p>This is an AI model created with Teachable Machine. It can make predictions based on what it sees.</p>
+        
+        <!-- Teachable Machine's Code -->
+        <div id="webcam-container"></div>
+        <div id="label-container"></div>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+        <script type="text/javascript">
+            // Paste the Teachable Machine script code here
+        </script>
+    </div>
+
+    <footer>
+        <p>© 2024 My AI Project | Powered by Teachable Machine</p>
+    </footer>
+</body>
+</html>
+<div>Teachable Machine Image Model</div>
+<button type="button" onclick="init()">Start</button>
+<div id="webcam-container"></div>
+<div id="label-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+<script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = "https://teachablemachine.withgoogle.com/models/tPhebOPW8/";
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    // Load the image model and setup the webcam
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        await webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // append elements to the DOM
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
+
+    async function loop() {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    // run the webcam image through the image model
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        const prediction = await model.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
+</script>
