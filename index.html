@@ -8,13 +8,15 @@
         /* Add a background image with leaf design */
         body {
             background-image: url('MIH.jpg');
-            background-repeat: repeat; /* or 'no-repeat' if you don't want it to repeat */
-            background-size: cover; /* or 'contain' or 'auto', depending on your preference */
+            background-repeat: repeat;
+            background-size: cover;
             font-family: 'Roboto', sans-serif;
             color: #333;
             margin: 0;
             padding: 0;
             text-align: center;
+            margin-bottom: 60px; /* Prevent overlap with footer */
+            position: relative; /* Add this for absolute positioning of the button */
         }
 
         /* Style the header */
@@ -28,10 +30,11 @@
         /* Add some padding and margin to the main content */
         .content {
             padding: 20px;
-            background-color: rgba(255, 255, 255, 0.8); /* Slightly transparent white background */
+            background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             margin: 20px;
             display: inline-block;
+            margin-bottom: 100px; /* Increased margin to avoid overlap with footer */
         }
 
         /* Style the container for the AI model */
@@ -47,14 +50,14 @@
 
         /* Style the footer */
         footer {
-        color: #000000; /* Use the same blue color for the text instead */
-        padding: 10px;
-        text-align: center;
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background-color: transparent; /* Remove the background color */
-    }
+            color: #000000;
+            padding: 20px; /* Increased padding */
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: transparent;
+            height: 60px; /* Increased height */
         }
 
         /* Add some spacing around elements */
@@ -62,7 +65,7 @@
             font-size: 1.2em;
         }
 
-        /* Button Style (if you want to add any) */
+        /* Button Style */
         .btn {
             background-color: #ff6347;
             border: none;
@@ -76,11 +79,70 @@
             cursor: pointer;
             border-radius: 8px;
         }
+
+        /* Article and photo styling */
+        .article-section {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            margin: 20px;
+            padding-bottom: 100px; /* Increased bottom padding to avoid overlap */
+        }
+
+        .article-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .article-section h2 {
+            color: #4a90e2;
+        }
+
+        .article-section p {
+            font-size: 1em;
+            line-height: 1.6;
+        }
+
+        /* Stylish button for top right corner */
+        .top-right-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #9370DB, #DA70D6); /* Updated purple gradient */
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .top-right-button:hover {
+            background: linear-gradient(135deg, #DA70D6, #9370DB); /* Reversed gradient for hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .top-right-button:active {
+            background: linear-gradient(135deg, #9370DB, #DA70D6); /* Gradient for active state */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transform: translateY(1px);
+        }
+
     </style>
     <!-- Import Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Top right button -->
+    <a href="https://ajayrowlet.github.io/APT-AI/" target="_blank">
+        <button class="top-right-button">Learn More</button>
+    </a>
+
     <h1>My AI Model</h1>
     <div class="content">
         <p>This is an AI model created with Teachable Machine. It can make predictions based on what it sees.</p>
@@ -88,74 +150,62 @@
         <!-- Teachable Machine's Code -->
         <div id="webcam-container"></div>
         <div id="label-container"></div>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+        <button id="start-button" type="button" onclick="init()">Start</button>
+
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
         <script type="text/javascript">
-            // Paste the Teachable Machine script code here
+            const URL = "https://teachablemachine.withgoogle.com/models/tPhebOPW8/";
+
+            let model, webcam, labelContainer, maxPredictions;
+
+            async function init() {
+                // Hide the start button
+                document.getElementById('start-button').style.display = 'none';
+
+                const modelURL = URL + "model.json";
+                const metadataURL = URL + "metadata.json";
+
+                model = await tmImage.load(modelURL, metadataURL);
+                maxPredictions = model.getTotalClasses();
+
+                const flip = true;
+                webcam = new tmImage.Webcam(200, 200, flip);
+                await webcam.setup();
+                await webcam.play();
+                window.requestAnimationFrame(loop);
+
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
+                labelContainer = document.getElementById("label-container");
+                for (let i = 0; i < maxPredictions; i++) {
+                    labelContainer.appendChild(document.createElement("div"));
+                }
+            }
+
+            async function loop() {
+                webcam.update();
+                await predict();
+                window.requestAnimationFrame(loop);
+            }
+
+            async function predict() {
+                const prediction = await model.predict(webcam.canvas);
+                for (let i = 0; i < maxPredictions; i++) {
+                    const classPrediction =
+                        prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+                    labelContainer.childNodes[i].innerHTML = classPrediction;
+                }
+            }
         </script>
     </div>
 
+    <div class="article-section">
+        <h2>PREVENT INVASIVE ALIEN SPECIES ON LAND AND IN WATER ECOSYSTEMS</h2>
+        <img src="WOH.jpg" alt="Invasive Species">
+        <p>By 2020, introduce measures to prevent the introduction and significantly reduce the impact of invasive alien species on land and water ecosystems and control or eradicate the priority species.</p>
+    </div>
     <footer>
         <p>© 2024 My AI Project | Powered by Teachable Machine</p>
     </footer>
 </body>
 </html>
-<div>Teachable Machine Image Model</div>
-<button type="button" onclick="init()">Start</button>
-<div id="webcam-container"></div>
-<div id="label-container"></div>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-<script type="text/javascript">
-    // More API functions here:
-    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-
-    // the link to your model provided by Teachable Machine export panel
-    const URL = "https://teachablemachine.withgoogle.com/models/tPhebOPW8/";
-
-    let model, webcam, labelContainer, maxPredictions;
-
-    // Load the image model and setup the webcam
-    async function init() {
-        const modelURL = URL + "model.json";
-        const metadataURL = URL + "metadata.json";
-
-        // load the model and metadata
-        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-        // or files from your local hard drive
-        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
-
-        // Convenience function to setup a webcam
-        const flip = true; // whether to flip the webcam
-        webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-        await webcam.setup(); // request access to the webcam
-        await webcam.play();
-        window.requestAnimationFrame(loop);
-
-        // append elements to the DOM
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-        labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) { // and class labels
-            labelContainer.appendChild(document.createElement("div"));
-        }
-    }
-
-    async function loop() {
-        webcam.update(); // update the webcam frame
-        await predict();
-        window.requestAnimationFrame(loop);
-    }
-
-    // run the webcam image through the image model
-    async function predict() {
-        // predict can take in an image, video or canvas html element
-        const prediction = await model.predict(webcam.canvas);
-        for (let i = 0; i < maxPredictions; i++) {
-            const classPrediction =
-                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
-            labelContainer.childNodes[i].innerHTML = classPrediction;
-        }
-    }
-</script>
