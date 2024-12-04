@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My AI Model</title>
     <style>
-        /* Add a background image with leaf design */
         body {
             background-image: url('MIH.jpg');
             background-repeat: repeat;
@@ -15,11 +14,10 @@
             margin: 0;
             padding: 0;
             text-align: center;
-            margin-bottom: 60px; /* Prevent overlap with footer */
-            position: relative; /* Add this for absolute positioning of the button */
+            margin-bottom: 60px;
+            position: relative;
         }
 
-        /* Style the header */
         h1 {
             color: #9d37e6;
             font-size: 3em;
@@ -27,17 +25,15 @@
             text-shadow: 2px 2px 4px #000000;
         }
 
-        /* Add some padding and margin to the main content */
         .content {
             padding: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             margin: 20px;
             display: inline-block;
-            margin-bottom: 100px; /* Increased margin to avoid overlap with footer */
+            margin-bottom: 100px;
         }
 
-        /* Style the container for the AI model */
         #webcam-container {
             margin-top: 20px;
             margin-bottom: 20px;
@@ -48,24 +44,21 @@
             margin-top: 20px;
         }
 
-        /* Style the footer */
         footer {
             color: #000000;
-            padding: 20px; /* Increased padding */
+            padding: 20px;
             text-align: center;
             position: fixed;
             bottom: 0;
             width: 100%;
             background-color: transparent;
-            height: 60px; /* Increased height */
+            height: 60px;
         }
 
-        /* Add some spacing around elements */
         p {
             font-size: 1.2em;
         }
 
-        /* Button Style */
         .btn {
             background-color: #ff6347;
             border: none;
@@ -80,13 +73,12 @@
             border-radius: 8px;
         }
 
-        /* Article and photo styling */
         .article-section {
             padding: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             margin: 20px;
-            padding-bottom: 100px; /* Increased bottom padding to avoid overlap */
+            padding-bottom: 100px;
         }
 
         .article-section img {
@@ -105,12 +97,11 @@
             line-height: 1.6;
         }
 
-        /* Stylish button for top right corner */
         .top-right-button {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #9370DB, #DA70D6); /* Updated purple gradient */
+            background: linear-gradient(135deg, #9370DB, #DA70D6);
             color: white;
             border: none;
             padding: 15px 25px;
@@ -122,23 +113,20 @@
         }
 
         .top-right-button:hover {
-            background: linear-gradient(135deg, #DA70D6, #9370DB); /* Reversed gradient for hover */
+            background: linear-gradient(135deg, #DA70D6, #9370DB);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
             transform: translateY(-2px);
         }
 
         .top-right-button:active {
-            background: linear-gradient(135deg, #9370DB, #DA70D6); /* Gradient for active state */
+            background: linear-gradient(135deg, #9370DB, #DA70D6);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transform: translateY(1px);
         }
-
     </style>
-    <!-- Import Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Top right button -->
     <a href="https://ajayrowlet.github.io/APT-AI/" target="_blank">
         <button class="top-right-button">Learn More</button>
     </a>
@@ -147,7 +135,6 @@
     <div class="content">
         <p>This is an AI model created with Teachable Machine. It can make predictions based on what it sees.</p>
         
-        <!-- Teachable Machine's Code -->
         <div id="webcam-container"></div>
         <div id="label-container"></div>
         <button id="start-button" type="button" onclick="init()">Start</button>
@@ -160,7 +147,6 @@
             let model, webcam, labelContainer, maxPredictions;
 
             async function init() {
-                // Hide the start button
                 document.getElementById('start-button').style.display = 'none';
 
                 const modelURL = URL + "model.json";
@@ -169,9 +155,11 @@
                 model = await tmImage.load(modelURL, metadataURL);
                 maxPredictions = model.getTotalClasses();
 
-                const flip = true;
+                const flip = false; // Disable flipping for back camera
                 webcam = new tmImage.Webcam(200, 200, flip);
-                await webcam.setup();
+
+                // Use facingMode to access the back camera
+                await webcam.setup({ facingMode: "environment" });
                 await webcam.play();
                 window.requestAnimationFrame(loop);
 
